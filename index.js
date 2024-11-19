@@ -1,8 +1,6 @@
 require('dotenv').config();
 const sgMail = require('@sendgrid/mail');
-const { User } = require('./UserModel');
 const AWS = require('aws-sdk');
-const { v4: uuidv4 } = require('uuid'); // For generating the token
 
 // Initialize the SendGrid API key
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -28,7 +26,7 @@ exports.helloSNS = async (event, context) => {
       to: email,
       from: 'Aayush Soni <noreply@aayushsoni237.me>', // Replace with your verified SendGrid sender email
       subject: 'Email Verification',
-      text: `Please click on the link to verify your email: http://dev.aayushsoni237.me/v1/user/verify?token=${verification_token}`,
+      text: `Please click on the link to verify your email: http://demo.aayushsoni237.me/v1/user/verify?token=${verification_token}`,
     };
 
     // Send the verification email
