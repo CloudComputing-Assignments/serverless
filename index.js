@@ -2,11 +2,8 @@ require('dotenv').config();
 const sgMail = require('@sendgrid/mail');
 const AWS = require('aws-sdk');
 
-// Initialize the SendGrid API key
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-// Initialize the SNS service
-const sns = new AWS.SNS();
+// Initialize the AWS Secrets Manager client
+const secretsManager = new AWS.SecretsManager();
 
 exports.helloSNS = async (event, context) => {
   try {
@@ -20,6 +17,20 @@ exports.helloSNS = async (event, context) => {
     if (!email || !verification_token) {
       throw new Error('Missing email or verification token in SNS message');
     }
+
+    // Retrieve the SendGrid API key from Secrets Manager
+    const secretName = "sendgrid-api-key-v1"; // Replace with the actual secret name
+    const secretValue = await secretsManager.getSecretValue({ SecretId: secretName }).promise();
+
+    let sendgridApiKey;
+    if ('SecretString' in secretValue) {
+      sendgridApiKey = JSON.parse(secretValue.SecretString).SENDGRID_API_KEY;
+    } else {
+      throw new Error("SecretString is missing from the secret");
+    }
+
+    // Initialize the SendGrid API key
+    sgMail.setApiKey(sendgridApiKey);
 
     // Prepare the email content to be sent via SendGrid
     const emailData = {
